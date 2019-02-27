@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#http://scikit-image.org/docs/dev/auto_examples/transform/plot_radon_transform.html#id5
+
 """
 Created on Wed Feb 27 00:52:45 2019
 
