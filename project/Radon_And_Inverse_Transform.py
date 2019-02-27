@@ -4,7 +4,6 @@
 """
 Created on Wed Feb 27 00:52:45 2019
 
-@author: user
 """
 
 import numpy as np
