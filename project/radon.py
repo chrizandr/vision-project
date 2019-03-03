@@ -17,6 +17,7 @@ def radon_projection(image, theta_arr):
 def inverse_radon_reconstruction(sinogram, theta_arr):
     reconstruction_fbp = iradon(sinogram, theta_arr, circle=True)
     error = reconstruction_fbp - image
+    return reconstruction_fbp, error
 
 
 if __name__ == "__main__":
@@ -33,5 +34,10 @@ if __name__ == "__main__":
         theta_arr[i] = np.rad2deg(i*np.pi/num_angles)+math.degrees(math.pi/2)
 
     sin = radon_projection(image, theta_arr)
-    # pdb.set_trace()
-    reconstruction = inverse_radon_reconstruction(sin, theta_arr)
+    reconstruction, error = inverse_radon_reconstruction(sin, theta_arr)
+
+    plt.imshow(image, 'gray')
+    plt.show()
+
+    plt.imshow(reconstruction, 'gray')
+    plt.show()
