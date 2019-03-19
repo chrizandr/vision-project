@@ -1,11 +1,11 @@
 import torch
-import cv2
+from skimage.io import imread
 import pdb
 import numpy as np
 import torch.nn.functional as F
 
 
-def initialize_LK(blur_img, iterations=5, learning_rate=0.001):
+def initialize_LK(blur_img, iterations=500, learning_rate=0.0001):
     """Value for latent image and kernel."""
     latent_img = blur_img.copy()
     latent_img = np.reshape(latent_img, (1, 1, latent_img.shape[0], latent_img.shape[1]))
@@ -30,9 +30,12 @@ def initialize_LK(blur_img, iterations=5, learning_rate=0.001):
 
     conv = torch.nn.Conv2d(1, 1, (31, 31), stride=1, padding=15, bias=False)
     torch.nn.init.normal_(conv.weight, mean=0, std=1)
-    pdb.set_trace()
 
-    for i in range(iterations):
+    normval = np.inf
+    i = 0
+
+    while True:
+        i += 1
         if i % 2 == 1:
             out1 = conv(latent_img)
             norm1 = torch.norm((blur_img-out1), 2)
@@ -45,7 +48,7 @@ def initialize_LK(blur_img, iterations=5, learning_rate=0.001):
             energy = norm1 + G
             conv.zero_grad()
             energy.backward()
-
+            print(norm1)
             with torch.no_grad():
                 for param in conv.parameters():
                     param.data -= learning_rate*param.grad
@@ -59,22 +62,28 @@ def initialize_LK(blur_img, iterations=5, learning_rate=0.001):
             Gy = F.conv2d(latent_img, s_y)
             G = torch.sum(torch.sqrt(torch.pow(Gx, 2) + torch.pow(Gy, 2)))
             energy = norm1 + G
-
+            print(norm1)
             conv.zero_grad()
             energy.backward()
 
             with torch.no_grad():
                 latent_img -= learning_rate*latent_img.grad
 
+        if normval < norm1.item():
+            break
+        normval = norm1.item()
+
+    latent_img.requires_grad = False
+    for param in conv.parameters():
+        param.requires_grad = False
     latent_img = latent_img.cpu().numpy()[0][0]
     kernel = conv.weight.cpu().numpy()[0][0]
-
-    cv2.imwrite('out_img.jpg', latent_img)
 
     return latent_img, kernel
 
 
 if __name__ == "__main__":
-    blur_img = cv2.imread('image.JPG', 0)
+    blur_img = imread('test.jpg', as_gray=True)
     L, K = initialize_LK(blur_img)
+    pdb.set_trace()
     print(L.shape, K.shape)
