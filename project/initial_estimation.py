@@ -1,5 +1,6 @@
 import torch
 from skimage.io import imread
+from skimage.transform import rescale
 import pdb
 import numpy as np
 import torch.nn.functional as F
@@ -7,6 +8,7 @@ import torch.nn.functional as F
 
 def initialize_LK(blur_img, iterations=500, learning_rate=0.0001):
     """Value for latent image and kernel."""
+    # blur_img = rescale(blur_img, 1.0 / 2.0, anti_aliasing=False)
     latent_img = blur_img.copy()
     latent_img = np.reshape(latent_img, (1, 1, latent_img.shape[0], latent_img.shape[1]))
     latent_img = torch.from_numpy(latent_img)
@@ -43,7 +45,7 @@ def initialize_LK(blur_img, iterations=500, learning_rate=0.0001):
             # calculating total variation as regularization term.
             Gx = F.conv2d(conv.weight, s_x)
             Gy = F.conv2d(conv.weight, s_y)
-            G = torch.sum(torch.sqrt(torch.pow(Gx, 2) + torch.pow(Gy, 2)))
+            G = torch.norm(conv.weight, 2)
 
             energy = norm1 + G
             conv.zero_grad()
@@ -61,7 +63,7 @@ def initialize_LK(blur_img, iterations=500, learning_rate=0.0001):
             Gx = F.conv2d(latent_img, s_x)
             Gy = F.conv2d(latent_img, s_y)
             G = torch.sum(torch.sqrt(torch.pow(Gx, 2) + torch.pow(Gy, 2)))
-            energy = norm1 + G
+            energy = norm1 + 0.05
             print(norm1)
             conv.zero_grad()
             energy.backward()
