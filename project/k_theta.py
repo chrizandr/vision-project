@@ -1,13 +1,13 @@
 import torch
-from skimage.io import imread
-from skimage.transform import rescale
+from skimage.io import imread, imsave
 import pdb
 import numpy as np
-import torch.nn.functional as F
+import pickle
+# import torch.nn.functional as F
 import matplotlib.pyplot as plt
 
 
-def initialize_LK(b_theta, latent_img, k_init, learning_rate=0.0001):
+def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0002):
     """Value for latent image and kernel."""
     latent_img = np.reshape(latent_img, (1, 1, latent_img.shape[0], latent_img.shape[1]))
     latent_img = torch.from_numpy(latent_img)
@@ -69,7 +69,7 @@ def initialize_LK(b_theta, latent_img, k_init, learning_rate=0.0001):
 
         print('Iteration ', i, "Norm = ", norm.item())
         i += 1
-        if normval < norm.item():
+        if normval - norm.item() < 0.0001:
             break
         normval = norm.item()
 
@@ -82,17 +82,14 @@ def initialize_LK(b_theta, latent_img, k_init, learning_rate=0.0001):
 
 
 if __name__ == "__main__":
-    b_theta = imread('test.jpg', as_gray=True)
-    # L0, K = initialize_LK(b_theta[:, :, 0])
-    # L1, K = initialize_LK(b_theta[:, :, 1])
-    # L2, K = initialize_LK(b_theta[:, :, 2])
-    # pdb.set_trace()
-    # L = np.dstack([L0, L1, L2])
-    L, K = initialize_LK(b_theta)
-    #plt.subplot(211)
-    plt.imshow(L, 'gray')
-    # plt.subplot(212)
-    # plt.imshow(b_theta, 'gray')
-    plt.show()
+    img_name = "test.jpg"
 
-    print(L.shape, K.shape)
+    blur_img = imread('test.jpg', as_gray=True)
+    L, K = pickle.load(open(img_name.split(".")[0] + "_init.pkl", "rb"))
+    # blur_img = rescale(blur_img, 1.0/2, multichannel=False, )
+
+    k_theta = compute_ktheta(blur_img, L, K)
+    pdb.set_trace()
+
+    imsave(img_name.split(".")[0] + "L0.png", L)
+    imsave(img_name.split(".")[0] + "K0.png", K)
