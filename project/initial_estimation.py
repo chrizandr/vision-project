@@ -63,7 +63,7 @@ def initialize_LK(blur_img, learning_rate=0.0001):
         i += 1
 
         # Convergence
-        if normval < norm1.item():
+        if normval - norm1.item() < 0.0001:
             break
         normval = norm1.item()
 

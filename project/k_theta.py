@@ -40,18 +40,18 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0002):
     for param in conv_y.parameters():
         param.requires_grad = False
 
+    B_x = conv_x(b_theta)
+    B_y = conv_y(b_theta)
+    delta_B = torch.sqrt(torch.pow(B_x, 2) + torch.pow(B_y, 2))
+
+    L_x = conv_x(latent_img)
+    L_y = conv_y(latent_img)
+    delta_L = torch.sqrt(torch.pow(L_x, 2) + torch.pow(L_y, 2))
+
     normval = np.inf
     i = 0
     while True:
         # Minimizing Kernel
-        B_x = conv_x(b_theta)
-        B_y = conv_y(b_theta)
-        delta_B = torch.sqrt(torch.pow(B_x, 2) + torch.pow(B_y, 2))
-
-        L_x = conv_x(latent_img)
-        L_y = conv_y(latent_img)
-        delta_L = torch.sqrt(torch.pow(L_x, 2) + torch.pow(L_y, 2))
-
         out = conv_ktheta(delta_L)
 
         norm = torch.norm((delta_B - out), 2)
