@@ -17,6 +17,7 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
     latent_img = torch.from_numpy(latent_img)
     latent_img = latent_img.type('torch.FloatTensor')
     latent_img.requires_grad = True
+    latent_img.retain_grad()
 
     b_theta = np.reshape(b_theta, (1, 1, b_theta.shape[0], b_theta.shape[1]))
     b_theta = torch.from_numpy(b_theta)
@@ -68,7 +69,7 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
     B_x = conv_x(b_theta)
     B_y = conv_y(b_theta)
     delta_B = torch.sqrt(torch.pow(B_x, 2) + torch.pow(B_y, 2))
-    delta_B.requires_grad = False
+    delta_B = delta_B.detach()
 
     normval = np.inf
     i = 0
@@ -85,12 +86,11 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
         R = w2 * torch.norm(delta_L, 2)
 
         energy = norm1 + norm2 + R
-        pdb.set_trace()
-        latent_img.grad.data.zero_()
         energy.backward()
 
         with torch.no_grad():
             latent_img -= learning_rate*latent_img.grad
+        latent_img.grad.data.zero_()
 
         print('Iteration ', i, "Norm = ", norm1.item())
         i += 1
