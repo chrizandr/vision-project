@@ -48,6 +48,11 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0002):
     L_y = conv_y(latent_img)
     delta_L = torch.sqrt(torch.pow(L_x, 2) + torch.pow(L_y, 2))
 
+    if torch.cuda.device_count() > 0:
+        delta_L = delta_L.cuda()
+        delta_B = delta_B.cuda()
+        conv_ktheta = conv_ktheta.cuda()
+
     normval = np.inf
     i = 0
     while True:
@@ -82,10 +87,8 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0002):
             break
         normval = norm.item()
 
-    for param in conv_ktheta.parameters():
-        param.requires_grad = False
-
-    kernel = conv_ktheta.weight.cpu().numpy()[0][0]
+    conv_weight = conv_ktheta.weight.detach()
+    kernel = conv_weight.cpu().numpy()[0][0]
 
     return kernel
 
