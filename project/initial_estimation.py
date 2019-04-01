@@ -32,6 +32,7 @@ def initialize_LK(blur_img, learning_rate=0.0001):
         blur_img = blur_img.cuda()
         conv = conv.cuda()
 
+    latent_img.retain_grad()
     normval = np.inf
     i = 0
     nan_flag = 0
