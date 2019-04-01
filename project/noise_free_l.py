@@ -17,7 +17,6 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
     latent_img = torch.from_numpy(latent_img)
     latent_img = latent_img.type('torch.FloatTensor')
     latent_img.requires_grad = True
-    latent_img.retain_grad()
 
     b_theta = np.reshape(b_theta, (1, 1, b_theta.shape[0], b_theta.shape[1]))
     b_theta = torch.from_numpy(b_theta)
@@ -79,6 +78,7 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
         conv_y = conv_y.cuda()
         conv_k = conv_k.cuda()
 
+    latent_img.retain_grad()
     normval = np.inf
     i = 0
     while True:
