@@ -1,5 +1,6 @@
 """Directional filtering of image."""
 import matplotlib.pyplot as plt
+import torch
 import numpy as np
 import pdb
 
@@ -36,6 +37,22 @@ def directional_filter(theta, sigma):
         t = t+1
 
     return kernel
+
+
+def apply_filter(image, filter):
+    img = image.reshape(1, 1, image.shape[0], image.shape[1])
+    img = torch.from_numpy(img)
+    img = img.type('torch.FloatTensor')
+
+    conv = torch.nn.Conv2d(1, 1, filter.shape, stride=1,
+                           padding=(filter.shape[0]//2, filter.shape[1]//2),
+                           bias=False)
+    conv.weight = torch.nn.Parameter(torch.from_numpy(filter).float().unsqueeze(0).unsqueeze(0))
+
+    output = conv(img)
+    output = output.cpu().numpy()[0][0]
+
+    return output
 
 
 if __name__ == "__main__":
