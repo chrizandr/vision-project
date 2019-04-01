@@ -21,13 +21,20 @@ def initialize_LK(blur_img, learning_rate=0.0001):
     blur_img = np.reshape(blur_img, (1, 1, blur_img.shape[0], blur_img.shape[1]))
     blur_img = torch.from_numpy(blur_img)
     blur_img = blur_img.type('torch.FloatTensor')
+    blur_img.requires_grad = False
 
     # Blur kernel
     conv = torch.nn.Conv2d(1, 1, (31, 31), stride=1, padding=15, bias=False)
     torch.nn.init.normal_(conv.weight, mean=0, std=1)
 
+    if torch.cuda.device_count() > 0:
+        latent_img = latent_img.cuda()
+        blur_img = blur_img.cuda()
+        conv = conv.cuda()
+
     normval = np.inf
     i = 0
+    nan_flag = 0
 
     while True:
         # Kernel
@@ -41,9 +48,15 @@ def initialize_LK(blur_img, learning_rate=0.0001):
         energy.backward()
 
         # Updating kernel
-        with torch.no_grad():
-            for param in conv.parameters():
-                param.data -= learning_rate*param.grad
+        for param in conv.parameters():
+            if torch.any(torch.isnan(param.grad)):
+                nan_flag = 1
+                break
+
+        if not nan_flag:
+            with torch.no_grad():
+                for param in conv.parameters():
+                    param.data -= learning_rate*param.grad
 
         # Latent image
         out1 = conv(latent_img)
@@ -56,24 +69,31 @@ def initialize_LK(blur_img, learning_rate=0.0001):
         energy.backward()
 
         # Update latent image
-        with torch.no_grad():
-            latent_img -= learning_rate*latent_img.grad
+        if torch.any(torch.isnan(latent_img.grad)):
+            nan_flag = 1
+
+        if not nan_flag:
+            with torch.no_grad():
+                latent_img -= learning_rate*latent_img.grad
 
         print('Iteration ', i, "Norm = ", norm1.item())
         i += 1
 
         # Convergence
+        if nan_flag:
+            break
+
         if normval - norm1.item() < 0.0001:
             break
         normval = norm1.item()
 
-    latent_img.requires_grad = False
-    for param in conv.parameters():
-        param.requires_grad = False
+    latent_img = latent_img.detach()
+    conv_weight = conv.weight.detach()
+    blur_img = blur_img.detach()
 
     # To CPU
     latent_img = latent_img.cpu().numpy()[0][0]
-    kernel = conv.weight.cpu().numpy()[0][0]
+    kernel = conv_weight.cpu().numpy()[0][0]
     blur_img = blur_img.cpu().numpy()[0][0]
 
     return latent_img, kernel, blur_img
