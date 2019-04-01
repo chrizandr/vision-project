@@ -96,15 +96,19 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
         energy = norm1 + norm2 + R
         energy.backward()
 
-        with torch.no_grad():
-            latent_img -= learning_rate*latent_img.grad
-        latent_img.grad.data.zero_()
-
         print('Iteration ', i, "Norm = ", norm1.item())
         i += 1
         if normval - norm1.item() < 0.0001:
             break
         normval = norm1.item()
+
+        if torch.any(torch.isnan(latent_img.grad)).item():
+            break
+
+        with torch.no_grad():
+            latent_img -= learning_rate*latent_img.grad
+        latent_img.grad.data.zero_()
+
 
     latent_img.requires_grad = False
     latent_img = latent_img.cpu().numpy()[0][0]
