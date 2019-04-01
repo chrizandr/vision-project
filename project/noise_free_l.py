@@ -16,7 +16,6 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
     latent_img = np.reshape(latent_img, (1, 1, latent_img.shape[0], latent_img.shape[1]))
     latent_img = torch.from_numpy(latent_img)
     latent_img = latent_img.type('torch.FloatTensor')
-    latent_img = latent_img.cuda()
     latent_img.requires_grad = True
     latent_img.retain_grad()
 
