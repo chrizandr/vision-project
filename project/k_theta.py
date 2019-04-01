@@ -51,6 +51,7 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0002):
     normval = np.inf
     i = 0
     while True:
+        nan_flag = 0
         # Minimizing Kernel
         out = conv_ktheta(delta_L)
 
@@ -63,12 +64,20 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0002):
 
         with torch.no_grad():
             for param in conv_ktheta.parameters():
-                if torch.sum(torch.isnan(param.grad)) > 0:
-                    pdb.set_trace()
-                param.data -= learning_rate*param.grad
+                if torch.any(torch.isnan(param.grad)).item():
+                    nan_flag = 1
+
+        if not nan_flag:
+            with torch.no_grad():
+                for param in conv_ktheta.parameters():
+                    param.data -= learning_rate*param.grad
 
         print('Iteration ', i, "Norm = ", norm.item())
         i += 1
+
+        if nan_flag:
+            break
+
         if normval - norm.item() < 0.0001:
             break
         normval = norm.item()

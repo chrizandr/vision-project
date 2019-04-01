@@ -50,7 +50,7 @@ def initialize_LK(blur_img, learning_rate=0.0001):
 
         # Updating kernel
         for param in conv.parameters():
-            if torch.any(torch.isnan(param.grad)):
+            if torch.any(torch.isnan(param.grad)).item():
                 nan_flag = 1
                 break
 
@@ -70,7 +70,7 @@ def initialize_LK(blur_img, learning_rate=0.0001):
         energy.backward()
 
         # Update latent image
-        if torch.any(torch.isnan(latent_img.grad)):
+        if torch.any(torch.isnan(latent_img.grad)).item():
             nan_flag = 1
 
         if not nan_flag:
