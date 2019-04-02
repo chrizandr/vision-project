@@ -55,7 +55,7 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005, verbose=Fa
 
     normval = np.inf
     i = 0
-    optimizer = torch.optim.Adam([conv_ktheta.weight], lr=0.005)
+    optimizer = torch.optim.Adagrad([conv_ktheta.weight], lr=0.005)
     while True:
         # Minimizing Kernel
         out = conv_ktheta(delta_L)

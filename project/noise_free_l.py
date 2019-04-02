@@ -81,6 +81,7 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
     latent_img.retain_grad()
     normval = np.inf
     i = 0
+    optimizer = torch.optim.Adagrad([latent_img], lr=0.005)
     while True:
         # Minimizing Kernel
         L_x = conv_x(latent_img)
@@ -94,20 +95,15 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
         R = w2 * torch.norm(delta_L, 2)
 
         energy = norm1 + norm2 + R
+        optimizer.zero_grad()
         energy.backward()
 
+        optimizer.step()
         # print('Iteration ', i, "Norm = ", norm1.item())
         i += 1
         if normval - norm1.item() < 0.0001:
             break
         normval = norm1.item()
-
-        if torch.any(torch.isnan(latent_img.grad)).item():
-            break
-
-        with torch.no_grad():
-            latent_img -= learning_rate*latent_img.grad
-        latent_img.grad.data.zero_()
 
     latent_img = latent_img.detach()
     latent_img = latent_img.cpu().numpy()[0][0]
