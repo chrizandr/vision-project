@@ -72,7 +72,7 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
 
     if torch.cuda.device_count() > 0:
         latent_img = latent_img.cuda()
-        latent_img.requires_grad = True
+        latent_img.retain_grad()
         delta_B = delta_B.cuda()
         udelta_l = udelta_l.cuda()
         conv_x = conv_x.cuda()
