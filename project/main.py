@@ -4,7 +4,7 @@ from initial_estimation import initialize_LK
 from k_theta import compute_ktheta
 from noise_free_l import compute_l_zero
 from directional_filter import directional_filter, apply_filter
-
+import pickle
 from skimage.io import imread, imsave
 from skimage.transform import rescale, resize
 import math
@@ -60,10 +60,10 @@ def k_estimation(b0, Nf=10):
         print("Change from previous k0[i-1] - k[i]: ", error)
         count += 1
 
-    pdb.set_trace()
     return k0, l0
 
 
 if __name__ == "__main__":
     blur_img = imread('test.jpg', as_gray=True)
-    k0 = k_estimation(blur_img)
+    k0, l0 = k_estimation(blur_img)
+    pickle.dump((k0, l0), open("final.pkl", "wb"))
