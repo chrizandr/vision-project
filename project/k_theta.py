@@ -7,7 +7,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 
-def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0002):
+def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005):
     """Value for latent image and kernel."""
     latent_img = np.reshape(latent_img, (1, 1, latent_img.shape[0], latent_img.shape[1]))
     latent_img = torch.from_numpy(latent_img)
@@ -77,7 +77,8 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0002):
                 for param in conv_ktheta.parameters():
                     param.data -= learning_rate*param.grad
 
-        print('Iteration ', i, "Norm = ", norm.item())
+        if i%100 == 0:
+            print('Iteration ', i, "Norm = ", norm.item())
         i += 1
 
         if nan_flag:

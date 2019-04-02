@@ -16,8 +16,7 @@ def radon_projection(image, theta_arr):
 
 def inverse_radon_reconstruction(sinogram, theta_arr):
     reconstruction_fbp = iradon(sinogram, theta_arr, circle=True)
-    error = reconstruction_fbp - image
-    return reconstruction_fbp, error
+    return reconstruction_fbp
 
 
 if __name__ == "__main__":

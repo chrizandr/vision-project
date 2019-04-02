@@ -1,16 +1,18 @@
-from randon import *
+from radon import *
 from initial_estimation import *
 from k_theta import *
 from noise_free_l import *
+from directional_filter import *
+
 from skimage.io import imread, imsave
 from skimage.transform import rescale, resize
 import numpy as np
 import pdb
 
-def k_estimation(b0, Nf=36):
+def k_estimation(b0, Nf=10):
 	b1 = rescale(b0, 1.0/2, multichannel=False, anti_aliasing=False)
-	l1, k1, _ =initialize_LK(b1)
-	l0 = rescale(l10, 2.0, multichannel=False, anti_aliasing=False)
+	l1, k1, _ = initialize_LK(b1)
+	l0 = resize(l1, b0.shape, preserve_range=True, anti_aliasing=False)
 	k0 = k1
 	theta_arr = []
 	for i in range(0, Nf):
@@ -21,21 +23,21 @@ def k_estimation(b0, Nf=36):
 	prev_k0 = np.zeros(k0.shape)
 	while True:
 		b_theta_arr = []
-		for i in range(1, Nf+1):
+		for i in range(0, Nf):
 			dfilter = directional_filter((i*180)/Nf, 31)
 			b_theta = apply_filter(b0, dfilter)
 			b_theta_arr.append(b_theta)
 		b_theta_arr = np.array(b_theta_arr)
-
+	
 		k_theta_arr = []
 		r_transforms = []
 		for i in range(0, Nf):
 			k_theta = compute_ktheta(b_theta_arr[i], l0, k0)
-			r_transform = randon_projection(k_theta, [angle])
-			r_transforms.append(r_transform)
+			r_transform = radon_projection(k_theta, [theta_arr[i]])
+			r_transforms.append(r_transform[:,0])
 
 		r_transforms = np.array(r_transforms)
-		k0, _ = inverse_radon_reconstruction(r_transforms, theta_arr)
+		k0 = inverse_radon_reconstruction(r_transforms.T, theta_arr)
 
 		l0 = compute_l_zero(b0, l0, k0)
 
