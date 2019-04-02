@@ -7,7 +7,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 
-def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005, verbose=False):
+def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005, verbose=True):
     """Value for latent image and kernel."""
     latent_img = np.reshape(latent_img, (1, 1, latent_img.shape[0], latent_img.shape[1]))
     latent_img = torch.from_numpy(latent_img)
@@ -55,6 +55,7 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005, verbose=Fa
 
     normval = np.inf
     i = 0
+    optimizer = torch.optim.Adagrad([conv_ktheta.weight], lr=0.005)
     while True:
         nan_flag = 0
         # Minimizing Kernel
@@ -64,27 +65,25 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005, verbose=Fa
         G = torch.norm(conv_ktheta.weight, 2)
 
         energy = norm + G
-        conv_ktheta.zero_grad()
+        optimizer.zero_grad()
         energy.backward()
 
-        with torch.no_grad():
-            for param in conv_ktheta.parameters():
-                if torch.any(torch.isnan(param.grad)).item():
-                    nan_flag = 1
+        optimizer.step()
+        # if not nan_flag:
 
-        if not nan_flag:
-            with torch.no_grad():
-                for param in conv_ktheta.parameters():
-                    param.data -= learning_rate*param.grad
+        # with torch.no_grad():
+        #     for param in conv_ktheta.parameters():
+        #         if torch.any(torch.isnan(param.grad)).item():
+        #             nan_flag = 1
 
-        if i % 100 == 0 and verbose:
+        if i % 1 == 0 and verbose:
             print('Iteration ', i, "Norm = ", norm.item())
         i += 1
 
         if nan_flag:
             break
 
-        if normval - norm.item() < 0.0001:
+        if normval - norm.item() < 0.001:
             break
         normval = norm.item()
 
