@@ -26,11 +26,11 @@ if __name__ == "__main__":
 	# k_theta = compute_ktheta(b_theta, L, K, verbose=True)
 	k_theta = pickle.load(open("kt_90.pkl", "rb"))
 	r_transform1 = radon_projection(k_theta, [angle])
-	
-	k__theta = K * kernel
+	# r_transform1 = (r_transform1 - np.min(r_transform1)) / (np.max(r_transform1)-np.min(r_transform1))
+	k__theta = K
 	r_transform2 = radon_projection(k__theta, [angle])
-	plt.subplot(121)
-	plt.plot(r_transform1[:, 0])
-	plt.subplot(122)
-	plt.plot(r_transform2[:, 0])
+	# r_transform2 = (r_transform2 - np.min(r_transform2)) / (np.max(r_transform2)-np.min(r_transform2))
+	f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+	ax1.plot(r_transform1[:, 0])
+	ax2.plot(r_transform2[:, 0])
 	plt.show()
