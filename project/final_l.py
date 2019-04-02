@@ -1,0 +1,123 @@
+import torch
+import torch.nn as nn
+from skimage.io import imread, imsave
+# from skimage.transform import rescale
+import pdb
+import numpy as np
+import pickle
+# import torch.nn.functional as F
+import matplotlib.pyplot as plt
+
+
+def final_L(blur_img, latent_img, kernel, learning_rate=0.0001):
+    """Value for latent image and kernel."""
+    # Latent image
+    latent_img = np.reshape(latent_img, (1, 1, latent_img.shape[0], latent_img.shape[1]))
+    latent_img = torch.from_numpy(latent_img)
+    latent_img = latent_img.type('torch.FloatTensor')
+    latent_img.requires_grad = True
+
+    # Blur image
+    blur_img = np.reshape(blur_img, (1, 1, blur_img.shape[0], blur_img.shape[1]))
+    blur_img = torch.from_numpy(blur_img)
+    blur_img = blur_img.type('torch.FloatTensor')
+    blur_img.requires_grad = False
+
+    # Blur kernel
+    conv = torch.nn.Conv2d(1, 1, (31, 31), stride=1, padding=15, bias=False)
+    conv.weight = nn.Parameter(torch.nn.Parameter(torch.from_numpy(kernel).float().unsqueeze(0).unsqueeze(0)))
+
+    if torch.cuda.device_count() > 0:
+        latent_img = latent_img.cuda()
+        blur_img = blur_img.cuda()
+        conv = conv.cuda()
+
+    latent_img.retain_grad()
+    normval = np.inf
+    i = 0
+    nan_flag = 0
+    sigma = None
+
+    while True:
+        # Kernel
+        l_dash = latent_img.numpy()
+        l_dash, sigma = NLM(l_dash, sigma)
+        l_dash = torch.from_numpy(l_dash)
+        l_dash = l_dash.type("torch.FloatTensor")
+
+        if torch.cuda.device_count() > 0:
+            l_dash = l_dash.cuda()
+
+        out1 = conv(latent_img)
+
+        norm1 = torch.norm((blur_img-out1), 2)
+        G = torch.norm(conv.weight, 2)
+
+        energy = norm1 + G
+        conv.zero_grad()
+        energy.backward()
+
+        # Updating kernel
+        for param in conv.parameters():
+            if torch.any(torch.isnan(param.grad)).item():
+                nan_flag = 1
+                break
+
+        if not nan_flag:
+            with torch.no_grad():
+                for param in conv.parameters():
+                    param.data -= learning_rate*param.grad
+
+        # Latent image
+        out1 = conv(latent_img)
+
+        norm1 = torch.norm((blur_img-out1), 2)
+        G = torch.norm(latent_img, 2)
+
+        energy = norm1 + G
+        latent_img.grad.data.zero_()
+        energy.backward()
+
+        # Update latent image
+        if torch.any(torch.isnan(latent_img.grad)).item():
+            nan_flag = 1
+
+        if not nan_flag:
+            with torch.no_grad():
+                latent_img -= learning_rate*latent_img.grad
+
+        print('Iteration ', i, "Norm = ", norm1.item())
+        i += 1
+
+        # Convergence
+        if nan_flag:
+            break
+
+        if normval - norm1.item() < 0.0001:
+            break
+        normval = norm1.item()
+
+    latent_img = latent_img.detach()
+    conv_weight = conv.weight.detach()
+    blur_img = blur_img.detach()
+
+    # To CPU
+    latent_img = latent_img.cpu().numpy()[0][0]
+    kernel = conv_weight.cpu().numpy()[0][0]
+    blur_img = blur_img.cpu().numpy()[0][0]
+
+    return latent_img, kernel, blur_img
+
+
+if __name__ == "__main__":
+    img_name = "test.jpg"
+
+    blur_img = imread('test.jpg', as_gray=True)
+    # blur_img = rescale(blur_img, 1.0/2, multichannel=False, )
+
+    L, K, B = initialize_LK(blur_img)
+    pdb.set_trace()
+
+    pickle.dump((L, K), open(img_name.split(".")[0] + "_init.pkl", "wb"))
+    imsave(img_name.split(".")[0] + "L0.png", L)
+    imsave(img_name.split(".")[0] + "K0.png", K)
