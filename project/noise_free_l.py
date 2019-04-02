@@ -80,11 +80,11 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
 
     normval = np.inf
     i = 0
-    optimizer = torch.optim.Adagrad([latent_img_cuda], lr=0.005)
+    optimizer = torch.optim.Adagrad([latent_img], lr=0.005)
     while True:
         # Minimizing Kernel
-        L_x = conv_x(latent_img_cuda)
-        L_y = conv_y(latent_img_cuda)
+        L_x = conv_x(latent_img)
+        L_y = conv_y(latent_img)
         delta_L = torch.sqrt(torch.pow(L_x, 2) + torch.pow(L_y, 2))
 
         out = conv_k(delta_L)
