@@ -77,8 +77,8 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005):
                 for param in conv_ktheta.parameters():
                     param.data -= learning_rate*param.grad
 
-        if i%100 == 0:
-            print('Iteration ', i, "Norm = ", norm.item())
+        # if i%100 == 0:
+        #     print('Iteration ', i, "Norm = ", norm.item())
         i += 1
 
         if nan_flag:

@@ -77,7 +77,7 @@ def initialize_LK(blur_img, learning_rate=0.0001):
             with torch.no_grad():
                 latent_img -= learning_rate*latent_img.grad
 
-        print('Iteration ', i, "Norm = ", norm1.item())
+        # print('Iteration ', i, "Norm = ", norm1.item())
         i += 1
 
         # Convergence
