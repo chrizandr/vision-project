@@ -1,4 +1,5 @@
 import torch
+from torch.autograd import Variable
 from skimage.io import imread, imsave
 from skimage.transform import rescale, resize
 import pdb
@@ -14,9 +15,7 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
     l_1 = rescale(latent_img, 1.0/2, multichannel=False, anti_aliasing=False)
 
     latent_img = np.reshape(latent_img, (1, 1, latent_img.shape[0], latent_img.shape[1]))
-    latent_img = torch.from_numpy(latent_img)
-    latent_img = latent_img.type('torch.FloatTensor')
-    latent_img.requires_grad = True
+    latent_img = Variable(torch.FloatTensor(latent_img).cuda(), requires_grad=True)
 
     b_theta = np.reshape(b_theta, (1, 1, b_theta.shape[0], b_theta.shape[1]))
     b_theta = torch.from_numpy(b_theta)
@@ -71,7 +70,6 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
     delta_B = delta_B.detach()
 
     if torch.cuda.device_count() > 0:
-        latent_img_cuda = latent_img.cuda()
         delta_B = delta_B.cuda()
         udelta_l = udelta_l.cuda()
         conv_x = conv_x.cuda()
