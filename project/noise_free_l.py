@@ -8,7 +8,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 
-def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0002):
+def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0002, verbose=False):
     """Value for latent image and kernel."""
     latent_img_shape = latent_img.shape
     l_1 = rescale(latent_img, 1.0/2, multichannel=False, anti_aliasing=False)
@@ -99,8 +99,11 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
         energy.backward()
 
         optimizer.step()
-        # print('Iteration ', i, "Norm = ", norm1.item())
+
+        if verbose and i % 100 == 0:
+            print('Iteration ', i, "Norm = ", norm1.item())
         i += 1
+
         if normval - norm1.item() < 0.0001:
             break
         normval = norm1.item()
@@ -118,7 +121,7 @@ if __name__ == "__main__":
     L, K = pickle.load(open(img_name.split(".")[0] + "_init.pkl", "rb"))
     # blur_img = rescale(blur_img, 1.0/2, multichannel=False, )
 
-    latent_img = compute_l_zero(blur_img, L, K)
+    latent_img = compute_l_zero(blur_img, L, K, verbose=True)
     pdb.set_trace()
 
     imsave(img_name.split(".")[0] + "L0.png", L)
