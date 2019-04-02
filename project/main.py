@@ -29,7 +29,7 @@ def k_estimation(b0, Nf=10):
 
     count = 0
     for m in range(10):
-        verbose = m > 0
+        verbose = False
         print("Iteration number: ", count)
         b_theta_arr = []
         for i in range(0, Nf):
