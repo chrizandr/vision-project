@@ -78,7 +78,6 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
         conv_y = conv_y.cuda()
         conv_k = conv_k.cuda()
 
-    latent_img.retain_grad()
     normval = np.inf
     i = 0
     optimizer = torch.optim.Adagrad([latent_img], lr=0.005)
