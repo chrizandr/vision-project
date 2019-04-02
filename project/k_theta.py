@@ -7,7 +7,7 @@ import pickle
 import matplotlib.pyplot as plt
 
 
-def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005, verbose=True):
+def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005, verbose=False):
     """Value for latent image and kernel."""
     latent_img = np.reshape(latent_img, (1, 1, latent_img.shape[0], latent_img.shape[1]))
     latent_img = torch.from_numpy(latent_img)
@@ -55,9 +55,8 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005, verbose=Tr
 
     normval = np.inf
     i = 0
-    optimizer = torch.optim.Adagrad([conv_ktheta.weight], lr=0.005)
+    optimizer = torch.optim.Adam([conv_ktheta.weight], lr=0.005)
     while True:
-        nan_flag = 0
         # Minimizing Kernel
         out = conv_ktheta(delta_L)
 
@@ -69,19 +68,10 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005, verbose=Tr
         energy.backward()
 
         optimizer.step()
-        # if not nan_flag:
 
-        # with torch.no_grad():
-        #     for param in conv_ktheta.parameters():
-        #         if torch.any(torch.isnan(param.grad)).item():
-        #             nan_flag = 1
-
-        if i % 1 == 0 and verbose:
+        if i % 100 == 0 and verbose:
             print('Iteration ', i, "Norm = ", norm.item())
         i += 1
-
-        if nan_flag:
-            break
 
         if normval - norm.item() < 0.001:
             break
@@ -100,7 +90,7 @@ if __name__ == "__main__":
     L, K = pickle.load(open(img_name.split(".")[0] + "_init.pkl", "rb"))
     # blur_img = rescale(blur_img, 1.0/2, multichannel=False, )
 
-    k_theta = compute_ktheta(blur_img, L, K)
+    k_theta = compute_ktheta(blur_img, L, K, verbose=True)
     pdb.set_trace()
 
     imsave(img_name.split(".")[0] + "L0.png", L)
