@@ -29,6 +29,7 @@ def k_estimation(b0, Nf=10):
 
     count = 0
     for m in range(10):
+        verbose = m > 0
         print("Iteration number: ", count)
         b_theta_arr = []
         for i in range(0, Nf):
@@ -41,7 +42,7 @@ def k_estimation(b0, Nf=10):
         r_transforms = []
         for i in range(0, Nf):
             print("Computing b0 --> k_theta; filter: ", i)
-            k_theta = compute_ktheta(b_theta_arr[i], l0, k0)
+            k_theta = compute_ktheta(b_theta_arr[i], l0, k0, verbose=verbose)
             r_transform = radon_projection(k_theta, [theta_arr[i]])
             r_transforms.append(r_transform[:, 0])
 
