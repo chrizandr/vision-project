@@ -60,10 +60,10 @@ def k_estimation(b0, Nf=10):
         print("Change from previous k0[i-1] - k[i]: ", error)
         count += 1
 
-    return k0, l0
+    return k0, l0, error
 
 
 if __name__ == "__main__":
     blur_img = imread('test.jpg', as_gray=True)
-    k0, l0 = k_estimation(blur_img)
-    pickle.dump((k0, l0), open("final.pkl", "wb"))
+    k0, l0, error = k_estimation(blur_img)
+    pickle.dump((k0, l0, error), open("final.pkl", "wb"))
