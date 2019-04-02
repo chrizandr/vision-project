@@ -9,7 +9,7 @@ from skimage.io import imread, imsave
 from skimage.transform import rescale, resize
 import math
 import numpy as np
-# import pdb
+import pdb
 
 
 def k_estimation(b0, Nf=10):
@@ -28,7 +28,7 @@ def k_estimation(b0, Nf=10):
     prev_k0 = np.zeros(k0.shape)
 
     count = 0
-    while True:
+    for m in range(10):
         print("Iteration number: ", count)
         b_theta_arr = []
         for i in range(0, Nf):
@@ -59,6 +59,7 @@ def k_estimation(b0, Nf=10):
         print("Change from previous k0[i-1] - k[i]: ", error)
         count += 1
 
+    pdb.set_trace()
     return k0, l0
 
 
