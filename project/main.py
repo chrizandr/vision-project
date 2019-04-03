@@ -12,12 +12,12 @@ import numpy as np
 import pdb
 
 
-def k_estimation(b0, Nf=10):
+def k_estimation(b0, Nf=36):
     """Estimate blur kernel."""
     b0 = resize(b0, (64, 64), preserve_range=True, anti_aliasing=False)
     b1 = rescale(b0, 1.0/2, multichannel=False, anti_aliasing=False)
-    l1, k1, _ = initialize_LK(b1)
     print("Finding initial estimate, l1, k1 --> l0")
+    l1, k1, _ = initialize_LK(b1)
     l0 = resize(l1, b0.shape, preserve_range=True, anti_aliasing=False)
     k0 = k1
     theta_arr = []
