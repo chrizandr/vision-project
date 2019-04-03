@@ -64,6 +64,6 @@ def k_estimation(b0, Nf=10):
 
 
 if __name__ == "__main__":
-    blur_img = imread('test.jpg', as_gray=True)
+    blur_img = imread('1a.JPG', as_gray=True)
     k0, l0, error = k_estimation(blur_img)
     pdb.set_trace()
