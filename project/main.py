@@ -12,8 +12,9 @@ import numpy as np
 import pdb
 
 
-def k_estimation(b0, Nf=10):
+def k_estimation(b0, Nf=36):
     """Estimate blur kernel."""
+    b0 = resize(b0, (64, 64), preserve_range=True, anti_aliasing=False)
     b1 = rescale(b0, 1.0/2, multichannel=False, anti_aliasing=False)
     print("Finding initial estimate, l1, k1 --> l0")
     l1, k1, _ = initialize_LK(b1)
@@ -26,6 +27,7 @@ def k_estimation(b0, Nf=10):
     theta_arr = np.array(theta_arr)
 
     prev_k0 = np.zeros(k0.shape)
+    pickle.dump(l0, open("1a_l0.png", "wb"))
 
     count = 0
     for m in range(3):
@@ -34,7 +36,7 @@ def k_estimation(b0, Nf=10):
         b_theta_arr = []
         for i in range(0, Nf):
             print("Filtering b0 --> b_theta; filter: ", i)
-            dfilter = directional_filter((i*180)/Nf, 31)
+            dfilter = directional_filter((i*180)/Nf, 7)
             b_theta = apply_filter(b0, dfilter)
             b_theta_arr.append(b_theta)
         b_theta_arr = np.array(b_theta_arr)
@@ -51,7 +53,7 @@ def k_estimation(b0, Nf=10):
         k0 = inverse_radon_reconstruction(r_transforms.T, theta_arr)
 
         print("Compute final latent image [b0, k0] --> l0")
-        l0 = compute_l_zero(b0, l0, k0)
+        l0 = compute_l_zero(b0, l0, k0, verbose=True)
 
         error = np.linalg.norm(prev_k0-k0)
         if error < 0.05:
@@ -68,4 +70,3 @@ if __name__ == "__main__":
     blur_img = imread('1a.JPG', as_gray=True)
     k0, l0, error = k_estimation(blur_img)
     pickle.dump((k0, l0, error), open("1a_final.pkl", "wb"))
-

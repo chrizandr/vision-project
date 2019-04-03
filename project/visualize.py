@@ -43,6 +43,7 @@ if __name__ == "__main__":
     k_theta = pickle.load(open("kt_90.pkl", "rb"))
     
     r_transform1 = radon_projection(k_theta, [angle])
+
     r_transform1_90 = radon_projection(k_theta, [theta])
     r_transform2 = radon_projection(K, [angle])
     r_transform2_90 = radon_projection(K, [theta])
@@ -69,3 +70,4 @@ if __name__ == "__main__":
     plt.title(r'Radon Transform along θ+π/2 direction')
     plt.legend()
     plt.show()
+
