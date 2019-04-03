@@ -45,7 +45,7 @@ def apply_filter(image, filter):
     img = img.type('torch.FloatTensor')
 
     conv = torch.nn.Conv2d(1, 1, filter.shape, stride=1,
-                           padding=15,
+                           padding=3,
                            bias=False)
     conv.weight = torch.nn.Parameter(torch.from_numpy(filter).float().unsqueeze(0).unsqueeze(0))
 

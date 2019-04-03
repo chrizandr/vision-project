@@ -23,10 +23,10 @@ if __name__ == "__main__":
     k_theta = pickle.load(open("kt_90.pkl", "rb"))
     print(((k_theta-K)**2).sum())
     r_transform1 = radon_projection(k_theta, [angle])
-    r_transform1_90 = radon_projection(k_theta, [90])
+    r_transform1_90 = radon_projection(k_theta, [60])
 
     r_transform2 = radon_projection(K, [angle])
-    r_transform2_90 = radon_projection(K, [90])
+    r_transform2_90 = radon_projection(K, [60])
     f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
     ax1.plot(r_transform1[:, 0])
     ax1.plot(r_transform1_90[:, 0])
