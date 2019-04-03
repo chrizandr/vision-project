@@ -24,7 +24,7 @@ def initialize_LK(blur_img, learning_rate=0.0001):
     blur_img.requires_grad = False
 
     # Blur kernel
-    conv = torch.nn.Conv2d(1, 1, (7, 7), stride=1, padding=3, bias=False)
+    conv = torch.nn.Conv2d(1, 1, (31, 31), stride=1, padding=15, bias=False)
     torch.nn.init.normal_(conv.weight, mean=0, std=1)
 
     if torch.cuda.device_count() > 0:

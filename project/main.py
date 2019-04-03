@@ -29,13 +29,13 @@ def k_estimation(b0, Nf=36):
     pickle.dump(l0, open("1a_l0.png", "wb"))
 
     count = 0
-    for m in range(3):
+    for m in range(10):
         verbose = False
         print("Iteration number: ", count)
         b_theta_arr = []
         for i in range(0, Nf):
             print("Filtering b0 --> b_theta; filter: ", i)
-            dfilter = directional_filter((i*180)/Nf, 7)
+            dfilter = directional_filter((i*180)/Nf, 31)
             b_theta = apply_filter(b0, dfilter)
             b_theta_arr.append(b_theta)
         b_theta_arr = np.array(b_theta_arr)

@@ -22,7 +22,7 @@ def compute_l_zero(b_theta, latent_img, kernel, w1=0.05, w2=1, learning_rate=0.0
     b_theta = b_theta.type('torch.FloatTensor')
     b_theta.requires_grad = False
 
-    conv_k = torch.nn.Conv2d(1, 1, kernel_size=7, stride=1, padding=3, bias=False)
+    conv_k = torch.nn.Conv2d(1, 1, kernel_size=31, stride=1, padding=15, bias=False)
     conv_k.weight = torch.nn.Parameter(torch.from_numpy(kernel).float().unsqueeze(0).unsqueeze(0))
 
     # Tensors to compute gradients

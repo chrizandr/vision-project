@@ -19,7 +19,7 @@ def compute_ktheta(b_theta, latent_img, k_init, learning_rate=0.0005, verbose=Fa
     b_theta = b_theta.type('torch.FloatTensor')
     b_theta.requires_grad = False
 
-    conv_ktheta = torch.nn.Conv2d(1, 1, kernel_size=7, stride=1, padding=3, bias=False)
+    conv_ktheta = torch.nn.Conv2d(1, 1, kernel_size=31, stride=1, padding=15, bias=False)
     conv_ktheta.weight = torch.nn.Parameter(torch.from_numpy(k_init).float().unsqueeze(0).unsqueeze(0))
 
     # sobel filter
