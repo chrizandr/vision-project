@@ -1,16 +1,13 @@
 import torch
 import torch.nn as nn
 from skimage.io import imread, imsave
-# from skimage.transform import rescale
-import pdb
 import numpy as np
 import pickle
-# import torch.nn.functional as F
-import matplotlib.pyplot as plt
+from skimage.restoration import denoise_nl_means, estimate_sigma
 
 
-def final_L(blur_img, latent_img, kernel, learning_rate=0.0001):
-    """Value for latent image and kernel."""
+def final_L(blur_img, latent_img, kernel, w3=0.05, learning_rate=0.0001):
+    """Final latent image using non-local means denoising."""
     # Latent image
     latent_img = np.reshape(latent_img, (1, 1, latent_img.shape[0], latent_img.shape[1]))
     latent_img = torch.from_numpy(latent_img)
@@ -34,8 +31,8 @@ def final_L(blur_img, latent_img, kernel, learning_rate=0.0001):
 
     normval = np.inf
     i = 0
-    nan_flag = 0
     sigma = None
+    optimizer = torch.optim.Adagrad([latent_img], lr=0.005)
 
     while True:
         # Kernel
@@ -49,63 +46,36 @@ def final_L(blur_img, latent_img, kernel, learning_rate=0.0001):
 
         out1 = conv(latent_img)
 
-        norm1 = torch.norm((blur_img-out1), 2)
-        G = torch.norm(conv.weight, 2)
+        norm1 = torch.norm((blur_img - out1), 2)
+        G = w3 * torch.norm((latent_img - l_dash), 2)
 
         energy = norm1 + G
-        conv.zero_grad()
+        optimizer.zero_grad()
         energy.backward()
 
-        # Updating kernel
-        for param in conv.parameters():
-            if torch.any(torch.isnan(param.grad)).item():
-                nan_flag = 1
-                break
+        optimizer.step()
 
-        if not nan_flag:
-            with torch.no_grad():
-                for param in conv.parameters():
-                    param.data -= learning_rate*param.grad
-
-        # Latent image
-        out1 = conv(latent_img)
-
-        norm1 = torch.norm((blur_img-out1), 2)
-        G = torch.norm(latent_img, 2)
-
-        energy = norm1 + G
-        latent_img.grad.data.zero_()
-        energy.backward()
-
-        # Update latent image
-        if torch.any(torch.isnan(latent_img.grad)).item():
-            nan_flag = 1
-
-        if not nan_flag:
-            with torch.no_grad():
-                latent_img -= learning_rate*latent_img.grad
-
-        # print('Iteration ', i, "Norm = ", norm1.item())
         i += 1
-
-        # Convergence
-        if nan_flag:
-            break
 
         if normval - norm1.item() < 0.0001:
             break
         normval = norm1.item()
 
     latent_img = latent_img.detach()
-    conv_weight = conv.weight.detach()
-    blur_img = blur_img.detach()
-
-    # To CPU
     latent_img = latent_img.cpu().numpy()[0][0]
-    kernel = conv_weight.cpu().numpy()[0][0]
-    blur_img = blur_img.cpu().numpy()[0][0]
 
-    return latent_img, kernel, blur_img
+    return latent_img
+
+
+def NLM(img, sigma):
+    """Non local means denoising."""
+    sigma_est = np.mean(estimate_sigma(img, multichannel=False))
+    patch_kw = dict(patch_size=5,
+                    patch_distance=6,
+                    multichannel=False)
+    result = denoise_nl_means(img, h=0.8 * sigma_est, fast_mode=True,
+                              **patch_kw)
+    return result
 
 
 if __name__ == "__main__":
@@ -113,9 +83,8 @@ if __name__ == "__main__":
 
     blur_img = imread('test.jpg', as_gray=True)
     # blur_img = rescale(blur_img, 1.0/2, multichannel=False, )
-
-    L, K, B = initialize_LK(blur_img)
-    pdb.set_trace()
+    L, K = pickle.load(open(img_name.split(".")[0] + "_init.pkl", "rb"))
+    L = final_L(blur_img, L, K)
 
     pickle.dump((L, K), open(img_name.split(".")[0] + "_init.pkl", "wb"))
     imsave(img_name.split(".")[0] + "L0.png", L)

@@ -14,7 +14,6 @@ import pdb
 
 def k_estimation(b0, Nf=36):
     """Estimate blur kernel."""
-    b0 = resize(b0, (64, 64), preserve_range=True, anti_aliasing=False)
     b1 = rescale(b0, 1.0/2, multichannel=False, anti_aliasing=False)
     print("Finding initial estimate, l1, k1 --> l0")
     l1, k1, _ = initialize_LK(b1)
