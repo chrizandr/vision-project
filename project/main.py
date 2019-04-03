@@ -5,7 +5,7 @@ from k_theta import compute_ktheta
 from noise_free_l import compute_l_zero
 from directional_filter import directional_filter, apply_filter
 import pickle
-from skimage.io import imread, imsave
+from skimage.io import imread
 from skimage.transform import rescale, resize
 import math
 import numpy as np
@@ -29,6 +29,7 @@ def k_estimation(b0, Nf=10):
 
     count = 0
     for m in range(3):
+        verbose = False
         print("Iteration number: ", count)
         b_theta_arr = []
         for i in range(0, Nf):
